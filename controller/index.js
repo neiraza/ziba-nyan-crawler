@@ -1,19 +1,8 @@
 exports.index = function(req, res) {
   res.send('ziba nyan crawler...');
 
-  var sequelize = require("sequelize");
   var request = require("request");
   var cheerio = require("cheerio");
-
-  var connection = new sequelize('zibanyan', 'root', ''
-      , { host: 'localhost', port: 3306 });
-
-  var sites = connection.define("sites", {
-    url: sequelize.TEXT,
-    title: sequelize.STRING,
-    link: sequelize.TEXT,
-    linkTitle: sequelize.STRING
-  });
 
   // ziba nyan !!!!!
   var requestUrl = "http://egaogaippai.com/";
@@ -24,33 +13,20 @@ exports.index = function(req, res) {
       $ = cheerio.load(body);
 
       var url = res.request.href;
-      var title = $("title").text();
-
       console.log(url);
-      console.log(title);
 
-      $(".entry .entry-title-ac a[href]").each(function() {
-        console.log('~~~~~~~~~~~~~');
-        var link = $(this).attr('title')
-        console.log(link);
-
-        var linkTitle = $(this).attr('href');
-        console.log(linkTitle);
-        console.log('~~~~~~~~~~~~~');
-
-        var site = sites.build();
-        site.url = url;
-        site.title = title;
-        site.link = link;
-        site.linkTitle = linkTitle;
-
-        site.save()
-          .success(function(anotherTask) {
-            console.log('Succeed');
-          })
-          .error(function(error) {
-            console.log(error);
-        });
+      $(".entry-content").each(function(i){
+        console.log("---------- START " + i + " ------------");
+        var entryContent = $(this);
+        var entryTitle = entryContent.children(".entry-title-ac");
+        console.log(trimSp(entryTitle.text()));
+        var blogInfo = entryContent.children(".blog_info").children ("p");
+        console.log(trimSp(blogInfo.text()));
+        var dami = entryContent.children(".dami");
+        console.log(trimSp(dami.text()));
+        var motto = entryContent.children(".motto").children(".more-link").attr("href");
+        console.log(motto);
+        console.log("---------- END " + i + " ------------");
       });
     } else {
       console.log("--------------------------------------------------");
@@ -74,3 +50,6 @@ exports.support = function(req, res) {
     res.send('hello suport');
 }
 
+function trimSp(src) {
+  return src.replace(/\s+/g,  "");
+}
